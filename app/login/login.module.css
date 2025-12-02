@@ -1,0 +1,134 @@
+/* Full viewport gradient background */
+.loginContainer {
+	min-height: 100vh;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 32px 16px;
+	background: linear-gradient(140deg, #4c1d95 0%, #6626b8 35%, #7c2bc9 55%, #a323d6 72%, #d9268b 88%, #b90f4f 100%);
+	background-attachment: fixed;
+}
+
+/* White card */
+.card {
+	background: #ffffff;
+	width: 100%;
+	max-width: 480px;
+	border-radius: 28px;
+	/* Reduced padding to decrease overall height */
+	padding: 40px 48px 32px 48px;
+	box-shadow: 0 12px 28px -8px rgba(60, 18, 94, 0.25), 0 4px 12px rgba(60,18,94,0.12);
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+.header {
+	text-align: center;
+	/* Slightly reduced spacing below header */
+	margin-bottom: 32px;
+}
+
+.title {
+	font-size: 30px;
+	line-height: 1.2;
+	font-weight: 700;
+	margin: 0 0 12px 0;
+	color: #3b0d70;
+}
+
+.subtitle {
+	font-size: 15px;
+	font-weight: 500;
+	margin: 0;
+	color: #5b476f;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.fieldGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.label {
+	font-size: 14px;
+	font-weight: 600;
+	color: #2d2350;
+}
+
+.input {
+	font-size: 15px;
+	padding: 14px 16px;
+	border: 1px solid #e2e5ec;
+	border-radius: 10px;
+	background: #ffffff;
+  color: black;
+	outline: none;
+	transition: border-color .18s, box-shadow .18s;
+}
+
+.input:focus {
+	border-color: #7c2bc9;
+	box-shadow: 0 0 0 3px rgba(124,43,201,0.25);
+}
+
+.button {
+	margin-top: 4px; 
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: 600;
+	height: 52px;
+	border: none;
+	border-radius: 14px;
+	cursor: pointer;
+	background: linear-gradient(90deg, #7c2bc9 0%, #9333ea 40%, #d9268b 80%, #b90f4f 100%);
+	color: #ffffff;
+	box-shadow: 0 8px 18px -6px rgba(124,43,201,0.4), 0 3px 8px rgba(124,43,201,0.25);
+	transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 26px -8px rgba(124,43,201,0.5), 0 4px 12px rgba(124,43,201,0.3);
+}
+
+.button:active {
+	transform: translateY(0);
+	box-shadow: 0 8px 18px -6px rgba(124,43,201,0.4), 0 3px 8px rgba(124,43,201,0.25);
+}
+
+.demoNote {
+	margin-top: 24px; 
+	font-size: 13px;
+	text-align: center;
+	color: #6b7280;
+}
+
+@media (max-width: 560px) {
+	.card {
+		padding: 32px 32px 28px 32px;
+		border-radius: 24px;
+	}
+	.title {
+		font-size: 26px;
+	}
+	.form {
+		gap: 16px;
+	}
+	.button {
+		height: 50px;
+		font-size: 15px;
+	}
+	.demoNote {
+		margin-top: 20px;
+	}
+}
