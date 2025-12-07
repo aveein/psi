@@ -1,10 +1,151 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const [active, setActive] = useState<'search' | 'add' | 'full'>('full');
+  const [active, setActive] = useState<"search" | "add" | "full">("full");
+
+  const [data, setData] = useState([]);
+  const [mounted, setMounted] = useState(false);
+  const [searchBy, setSearchBy] = useState("name");
+  // Consolidated form state for "Add New Blacklist Entry"
+  type FormState = {
+    zairo: string;
+    fullName: string;
+    katakana: string;
+    dob: string;
+    gender: string;
+    nationality: string;
+    visaType: string;
+    joining: string;
+    site: string;
+    leavingDate: string;
+    leavingReason: string;
+    employeePhoto: File | null;
+    zairoPhoto: File | null;
+  };
+
+  const initialFormState: FormState = {
+    zairo: "",
+    fullName: "",
+    katakana: "",
+    dob: "",
+    gender: "",
+    nationality: "",
+    visaType: "",
+    joining: "",
+    site: "",
+    leavingDate: "",
+    leavingReason: "",
+    employeePhoto: null,
+    zairoPhoto: null,
+  };
+
+  async function fetchData() {
+    try {
+      const res = await fetch("http://localhost:3001/api/blacklist", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const json = await res.json().catch(() => null);
+      if (!json) {
+        setData([]);
+        return;
+      }
+
+      if (Array.isArray(json.data)) setData(json.data);
+      else setData([]);
+    } catch (err) {
+      setData([]);
+    }
+  }
+
+  useEffect(() => {
+    setMounted(true);
+    fetchData();
+  }, []);
+
+  const [formData, setFormData] = useState<FormState>(initialFormState);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
+    const target = e.target as HTMLInputElement;
+    const name = target.name;
+
+    // File input handling
+    if (target.type === "file") {
+      const file = target.files?.[0] ?? null;
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      return;
+    }
+
+    // Other inputs (text, date, select, textarea)
+    const value = (e.target as HTMLInputElement).value;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleAddSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Basic validation
+    if (!formData.zairo.trim() || !formData.fullName.trim()) {
+      setError("Zairo Card No. and Full Name are required.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = new FormData();
+      payload.append("card_no", formData.zairo);
+      payload.append("full_name", formData.fullName);
+      payload.append("name", formData.katakana);
+      payload.append("dob", formData.dob);
+      payload.append("gender", formData.gender);
+      payload.append("nationality", formData.nationality);
+      payload.append("visa_type", formData.visaType);
+      payload.append("joining_date", formData.joining);
+      payload.append("current_site_name", formData.site);
+      payload.append("leaving_date", formData.leavingDate);
+      payload.append("leaving_reason", formData.leavingReason);
+      if (formData.employeePhoto)
+        payload.append("employee_photo", formData.employeePhoto);
+      if (formData.zairoPhoto)
+        payload.append("card_photo", formData.zairoPhoto);
+
+      // Post to backend API - create /api/blacklist or similar to accept FormData
+      const res = await fetch("http://localhost:3001/api/blacklist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...Object.fromEntries(payload.entries()) }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.message || "Failed to add entry");
+      }
+
+      setSuccess("Entry added successfully.");
+      // Reset form
+      setFormData(initialFormState);
+    } catch (err: any) {
+      setError(err?.message || "Unable to add entry. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -12,11 +153,18 @@ export default function Dashboard() {
       <header className="bg-gradient-to-r from-purple-800 to-pink-600 text-white">
         <div className="max-w-7xl mx-auto px-8 py-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold leading-tight">Pioneer Service Kyoto</h1>
-            <p className="text-sm opacity-90 -mt-1">Blacklist Management System</p>
+            <h1 className="text-2xl font-semibold leading-tight">
+              Pioneer Service Kyoto
+            </h1>
+            <p className="text-sm opacity-90 -mt-1">
+              Blacklist Management System
+            </p>
           </div>
           <div className="pt-1">
-            <button onClick={() => redirect('/login')} className="bg-pink-500 hover:bg-pink-600 transition-colors text-sm font-medium px-5 py-2 rounded-md flex items-center space-x-2 shadow-sm">
+            <button
+              onClick={() => redirect("/login")}
+              className="bg-pink-500 hover:bg-pink-600 transition-colors text-sm font-medium px-5 py-2 rounded-md flex items-center space-x-2 shadow-sm"
+            >
               <LogoutIcon className="w-4 h-4" />
               <span>Logout</span>
             </button>
@@ -29,30 +177,48 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-8">
           <nav className="flex items-center space-x-10 text-sm font-medium">
             <button
-              onClick={() => setActive('search')}
-              className={`relative py-4 flex items-center space-x-2 px-1 ${active === 'search' ? 'text-purple-700' : 'text-gray-600 hover:text-gray-900'}`}
+              onClick={() => setActive("search")}
+              className={`relative py-4 flex items-center space-x-2 px-1 ${
+                active === "search"
+                  ? "text-purple-700"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               <SearchIcon className="w-5 h-5" />
               <span>Search</span>
-              {active === 'search' && <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />}
+              {active === "search" && (
+                <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
+              )}
             </button>
 
             <button
-              onClick={() => setActive('add')}
-              className={`relative py-4 flex items-center space-x-2 px-1 ${active === 'add' ? 'text-purple-700' : 'text-gray-600 hover:text-gray-900'}`}
+              onClick={() => setActive("add")}
+              className={`relative py-4 flex items-center space-x-2 px-1 ${
+                active === "add"
+                  ? "text-purple-700"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               <UserPlusIcon className="w-5 h-5" />
               <span>Add New Member</span>
-              {active === 'add' && <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />}
+              {active === "add" && (
+                <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
+              )}
             </button>
 
             <button
-              onClick={() => setActive('full')}
-              className={`relative py-4 flex items-center space-x-2 px-1 ${active === 'full' ? 'text-purple-700' : 'text-gray-600 hover:text-gray-900'}`}
+              onClick={() => setActive("full")}
+              className={`relative py-4 flex items-center space-x-2 px-1 ${
+                active === "full"
+                  ? "text-purple-700"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               <DatabaseIcon className="w-5 h-5" />
               <span>Full Database</span>
-              {active === 'full' && <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />}
+              {active === "full" && (
+                <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
+              )}
             </button>
           </nav>
         </div>
@@ -62,24 +228,32 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 py-10 md:py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-8">
-          {active === 'search' && (
+          {active === "search" && (
             <>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-black">Search Blacklist</h2>
-                 <form className="flex flex-col md:flex-row md:items-center gap-6 mt-4">
+                <h2 className="text-xl font-semibold text-black">
+                  Search Blacklist
+                </h2>
+                <form className="flex flex-col md:flex-row md:items-center gap-6 mt-4">
                   <div className="md:w-64">
-                    <label className="sr-only" htmlFor="searchBy">Search by</label>
+                    <label className="sr-only" htmlFor="searchBy">
+                      Search by
+                    </label>
                     <select
                       id="searchBy"
+                      name="searchBy"
+                      value={searchBy}
+                      onChange={(e) => setSearchBy(e.target.value)}
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      defaultValue="name"
                     >
                       <option value="name">Search by Name</option>
                       <option value="id">Search by ID</option>
                     </select>
                   </div>
                   <div className="flex-1">
-                    <label className="sr-only" htmlFor="query">Query</label>
+                    <label className="sr-only" htmlFor="query">
+                      Query
+                    </label>
                     <input
                       id="query"
                       type="text"
@@ -106,34 +280,98 @@ export default function Dashboard() {
             </>
           )}
 
-          {active === 'add' && (
+          {active === "add" && (
             <div className="max-w-3xl mx-auto px-0 sm:px-0">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-10">
-                <h2 className="text-lg md:text-xl font-semibold mb-6 text-black">Add New Blacklist Entry</h2>
-                <form className="space-y-5">
+                <h2 className="text-lg md:text-xl font-semibold mb-6 text-black">
+                  Add New Blacklist Entry
+                </h2>
+                <form className="space-y-5" onSubmit={handleAddSubmit}>
                   <div>
-                    <label htmlFor="zairo" className="block text-xs font-medium text-gray-700 mb-1">Zairo Card No. *</label>
-                    <input id="zairo" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <label
+                      htmlFor="zairo"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Zairo Card No. *
+                    </label>
+                    <input
+                      id="zairo"
+                      type="text"
+                      name="zairo"
+                      value={formData.zairo}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      required
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="fullName" className="block text-xs font-medium text-gray-700 mb-1">Full Name *</label>
-                    <input id="fullName" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <label
+                      htmlFor="fullName"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Full Name *
+                    </label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      required
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="katakana" className="block text-xs font-medium text-gray-700 mb-1">Name (Katakana)</label>
-                    <input id="katakana" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <label
+                      htmlFor="katakana"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Name (Katakana)
+                    </label>
+                    <input
+                      id="katakana"
+                      type="text"
+                      name="katakana"
+                      value={formData.katakana}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="relative">
-                      <label htmlFor="dob" className="block text-xs font-medium text-gray-700 mb-1">Date of birth</label>
-                      <input id="dob" type="date" placeholder="mm/dd/yyyy" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <label
+                        htmlFor="dob"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Date of birth
+                      </label>
+                      <input
+                        id="dob"
+                        type="date"
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleChange}
+                        placeholder="mm/dd/yyyy"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
                     </div>
                     <div>
-                      <label htmlFor="gender" className="block text-xs font-medium text-gray-700 mb-1">Gender</label>
-                      <select id="gender" className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400">
+                      <label
+                        htmlFor="gender"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Gender
+                      </label>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      >
                         <option value="">Select…</option>
                         <option>Male</option>
                         <option>Female</option>
@@ -143,82 +381,250 @@ export default function Dashboard() {
                   </div>
 
                   <div>
-                    <label htmlFor="nationality" className="block text-xs font-medium text-gray-700 mb-1">Nationality</label>
-                    <input id="nationality" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <label
+                      htmlFor="nationality"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Nationality
+                    </label>
+                    <input
+                      id="nationality"
+                      type="text"
+                      name="nationality"
+                      value={formData.nationality}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="visaType" className="block text-xs font-medium text-gray-700 mb-1">Visa Type</label>
-                    <input id="visaType" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                    <label
+                      htmlFor="visaType"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Visa Type
+                    </label>
+                    <input
+                      id="visaType"
+                      type="text"
+                      name="visaType"
+                      value={formData.visaType}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label htmlFor="joining" className="block text-xs font-medium text-gray-700 mb-1">Joining Date</label>
-                      <input id="joining" type="date" placeholder="mm/dd/yyyy" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <label
+                        htmlFor="joining"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Joining Date
+                      </label>
+                      <input
+                        id="joining"
+                        type="date"
+                        name="joining"
+                        value={formData.joining}
+                        onChange={handleChange}
+                        placeholder="mm/dd/yyyy"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
                     </div>
                     <div>
-                      <label htmlFor="site" className="block text-xs font-medium text-gray-700 mb-1">Current Site Name</label>
-                      <input id="site" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <label
+                        htmlFor="site"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Current Site Name
+                      </label>
+                      <input
+                        id="site"
+                        type="text"
+                        name="site"
+                        value={formData.site}
+                        onChange={handleChange}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label htmlFor="leavingDate" className="block text-xs font-medium text-gray-700 mb-1">Leaving Date</label>
-                      <input id="leavingDate" type="date" placeholder="mm/dd/yyyy" className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <label
+                        htmlFor="leavingDate"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Leaving Date
+                      </label>
+                      <input
+                        id="leavingDate"
+                        type="date"
+                        name="leavingDate"
+                        value={formData.leavingDate}
+                        onChange={handleChange}
+                        placeholder="mm/dd/yyyy"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
                     </div>
                     <div>
-                      <label htmlFor="leavingReason" className="block text-xs font-medium text-gray-700 mb-1">Leaving Reason</label>
-                      <textarea id="leavingReason" className="w-full h-28 rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <label
+                        htmlFor="leavingReason"
+                        className="block text-xs font-medium text-gray-700 mb-1"
+                      >
+                        Leaving Reason
+                      </label>
+                      <textarea
+                        id="leavingReason"
+                        name="leavingReason"
+                        value={formData.leavingReason}
+                        onChange={handleChange}
+                        className="w-full h-28 rounded-md border border-gray-300 px-3 py-2.5 text-sm text-black placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="employeePhoto" className="block text-xs font-medium text-gray-700 mb-1">Employee Photo</label>
-                    <input id="employeePhoto" type="file" className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none" />
+                    <label
+                      htmlFor="employeePhoto"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Employee Photo
+                    </label>
+                    <input
+                      id="employeePhoto"
+                      type="file"
+                      name="employeePhoto"
+                      accept="image/*"
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="zairoPhoto" className="block text-xs font-medium text-gray-700 mb-1">Zairo Card Photo</label>
-                    <input id="zairoPhoto" type="file" className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none" />
+                    <label
+                      htmlFor="zairoPhoto"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Zairo Card Photo
+                    </label>
+                    <input
+                      id="zairoPhoto"
+                      type="file"
+                      name="zairoPhoto"
+                      accept="image/*"
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none"
+                    />
                   </div>
 
+                  {error && <div className="text-sm text-red-600">{error}</div>}
+                  {success && (
+                    <div className="text-sm text-green-600">{success}</div>
+                  )}
                   <div className="pt-2">
-                    <button type="submit" className="w-full rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-medium py-3 shadow-sm">Add to Blacklist</button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-medium py-3 shadow-sm disabled:opacity-50"
+                    >
+                      {loading ? "Adding…" : "Add to Blacklist"}
+                    </button>
                   </div>
                 </form>
               </div>
             </div>
           )}
 
-          {active === 'full' && (
+          {active === "full" && (
             <>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-black">Full Database</h2>
-                <p className="text-sm text-gray-600 mt-2">Total Entries: 0</p>
+                <h2 className="text-xl font-semibold text-black">
+                  Full Database
+                </h2>
+                <p className="text-sm text-gray-600 mt-2">
+                  Total Entries: {mounted ? data.length : "—"}
+                </p>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-700 to-pink-600 text-white">
-                  <div className="grid grid-cols-[1.2fr_1.6fr_1.2fr_1.1fr_1.1fr_1.1fr_1.2fr_0.9fr] gap-4 px-6 py-4 text-sm font-semibold">
-                    <div>Zairo Card No.</div>
-                    <div>Full Name</div>
-                    <div>Nationality</div>
-                    <div>Visa Type</div>
-                    <div>Joining Date</div>
-                    <div>Leaving Date</div>
-                    <div>Current Site</div>
-                    <div>Action</div>
-                  </div>
-                </div>
-
-                <div className="p-10 flex items-center justify-center text-center">
-                  <div>
-                    <DatabaseLargeIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No entries in database</p>
-                  </div>
-                </div>
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-purple-700 to-pink-600 text-white">
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Zairo Card No.
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Full Name
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Nationality
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Visa Type
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Joining Date
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Leaving Date
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Current Site
+                      </th>
+                      <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-10 text-center">
+                          <div>
+                            <DatabaseLargeIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600">
+                              No entries in database
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      data.map((entry: any) => (
+                        <tr
+                          key={entry.id}
+                          className="border-t border-gray-100 hover:bg-gray-50"
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.card_no}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.full_name}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.nationality}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.visa_type}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.joining_date}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.leaving_date}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {entry.current_site}
+                          </td>
+                           <td className="px-6 py-4 text-sm text-gray-700">
+                           -
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </>
           )}
@@ -261,25 +667,23 @@ function SearchLargeIcon({ className = "" }: { className?: string }) {
 
 function UserPlusIcon({ className = "" }: { className?: string }) {
   return (
-<svg
-  className={className}
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="2"
-  viewBox="0 0 24 24"
->
-  {/* User head */}
-  <circle cx="11" cy="7" r="4" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      {/* User head */}
+      <circle cx="11" cy="7" r="4" />
 
-  {/* User shoulders */}
-  <path d="M15 14c2.761 0 5 2.239 5 5v1H4v-1c0-2.761 2.239-5 5-5h6Z" />
+      {/* User shoulders */}
+      <path d="M15 14c2.761 0 5 2.239 5 5v1H4v-1c0-2.761 2.239-5 5-5h6Z" />
 
-  {/* Plus icon (shifted right) */}
-  <line x1="20.5" y1="4" x2="20.5" y2="10" />
-  <line x1="17.5" y1="7" x2="23.5" y2="7" />
-</svg>
-
-
+      {/* Plus icon (shifted right) */}
+      <line x1="20.5" y1="4" x2="20.5" y2="10" />
+      <line x1="17.5" y1="7" x2="23.5" y2="7" />
+    </svg>
   );
 }
 
