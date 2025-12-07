@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   async function fetchData() {
     try {
-      const res = await fetch("http://localhost:3001/api/blacklist", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blacklist`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export default function Dashboard() {
         payload.append("card_photo", formData.zairoPhoto);
 
       // Post to backend API - create /api/blacklist or similar to accept FormData
-      const res = await fetch("http://localhost:3001/api/blacklist", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blacklist`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
