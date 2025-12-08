@@ -65,8 +65,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true);
-    fetchData();
-  }, []);
+    if(active === "full"){
+
+      fetchData();
+    }
+  }, [active]);
 
   const [formData, setFormData] = useState<FormState>(initialFormState);
   const [loading, setLoading] = useState(false);
@@ -166,7 +169,7 @@ export default function Dashboard() {
               className="bg-pink-500 hover:bg-pink-600 transition-colors text-sm font-medium px-5 py-2 rounded-md flex items-center space-x-2 shadow-sm"
             >
               <LogoutIcon className="w-4 h-4" />
-              <span>Logout</span>
+              <span>Logout | ログアウト</span>
             </button>
           </div>
         </div>
@@ -185,12 +188,11 @@ export default function Dashboard() {
               }`}
             >
               <SearchIcon className="w-5 h-5" />
-              <span>Search</span>
+              <span>Search | 検索</span>
               {active === "search" && (
                 <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
               )}
             </button>
-
             <button
               onClick={() => setActive("add")}
               className={`relative py-4 flex items-center space-x-2 px-1 ${
@@ -200,7 +202,7 @@ export default function Dashboard() {
               }`}
             >
               <UserPlusIcon className="w-5 h-5" />
-              <span>Add New Member</span>
+              <span>Add New Member | 新しいメンバーを追加</span>
               {active === "add" && (
                 <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
               )}
@@ -215,7 +217,7 @@ export default function Dashboard() {
               }`}
             >
               <DatabaseIcon className="w-5 h-5" />
-              <span>Full Database</span>
+              <span>Full Database | フルデータベース</span>
               {active === "full" && (
                 <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-full bg-purple-500" />
               )}
@@ -232,12 +234,12 @@ export default function Dashboard() {
             <>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-black">
-                  Search Blacklist
+                  Search Blacklist | ブラックリストを検索
                 </h2>
                 <form className="flex flex-col md:flex-row md:items-center gap-6 mt-4">
                   <div className="md:w-64">
                     <label className="sr-only" htmlFor="searchBy">
-                      Search by
+                      Search by | 検索条件
                     </label>
                     <select
                       id="searchBy"
@@ -246,13 +248,13 @@ export default function Dashboard() {
                       onChange={(e) => setSearchBy(e.target.value)}
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
                     >
-                      <option value="name">Search by Name</option>
-                      <option value="id">Search by ID</option>
+                      <option value="name">Search by Name | 名前で検索</option>
+                      <option value="id">Search by ID | IDで検索</option>
                     </select>
                   </div>
                   <div className="flex-1">
                     <label className="sr-only" htmlFor="query">
-                      Query
+                      Query | 検索語
                     </label>
                     <input
                       id="query"
@@ -267,7 +269,7 @@ export default function Dashboard() {
                       className="inline-flex items-center space-x-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
                     >
                       <SearchIcon className="w-4 h-4" />
-                      <span>Search</span>
+                      <span>Search | 検索</span>
                     </button>
                   </div>
                 </form>
@@ -275,7 +277,7 @@ export default function Dashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[220px]">
                 <SearchLargeIcon className="w-20 h-20 text-gray-400 mb-6" />
-                <p className="text-sm text-gray-600">No results found</p>
+                <p className="text-sm text-gray-600">No results found | 結果が見つかりません</p>
               </div>
             </>
           )}
@@ -284,7 +286,7 @@ export default function Dashboard() {
             <div className="max-w-3xl mx-auto px-0 sm:px-0">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-10">
                 <h2 className="text-lg md:text-xl font-semibold mb-6 text-black">
-                  Add New Blacklist Entry
+                  Add New Blacklist Entry | ブラックリストに新しいエントリを追加
                 </h2>
                 <form className="space-y-5" onSubmit={handleAddSubmit}>
                   <div>
@@ -292,7 +294,7 @@ export default function Dashboard() {
                       htmlFor="zairo"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Zairo Card No. *
+                      Zairo Card No.  | ザイロカード番号 *
                     </label>
                     <input
                       id="zairo"
@@ -310,7 +312,7 @@ export default function Dashboard() {
                       htmlFor="fullName"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Full Name *
+                      Full Name | 氏名 *
                     </label>
                     <input
                       id="fullName"
@@ -328,7 +330,7 @@ export default function Dashboard() {
                       htmlFor="katakana"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Name (Katakana)
+                      Name (Katakana) | 名前（カタカナ）
                     </label>
                     <input
                       id="katakana"
@@ -346,7 +348,7 @@ export default function Dashboard() {
                         htmlFor="dob"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Date of birth
+                        Date of birth | 生年月日
                       </label>
                       <input
                         id="dob"
@@ -363,7 +365,7 @@ export default function Dashboard() {
                         htmlFor="gender"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Gender
+                        Gender | 性別
                       </label>
                       <select
                         id="gender"
@@ -372,10 +374,10 @@ export default function Dashboard() {
                         onChange={handleChange}
                         className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-purple-400"
                       >
-                        <option value="">Select…</option>
-                        <option>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
+                        <option value="">Select… | 選択してください</option>
+                        <option>Male | 男性</option>
+                        <option>Female | 女性</option>
+                        <option>Other | その他</option>
                       </select>
                     </div>
                   </div>
@@ -385,7 +387,7 @@ export default function Dashboard() {
                       htmlFor="nationality"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Nationality
+                      Nationality | 国籍
                     </label>
                     <input
                       id="nationality"
@@ -402,7 +404,7 @@ export default function Dashboard() {
                       htmlFor="visaType"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Visa Type
+                      Visa Type | ビザの種類
                     </label>
                     <input
                       id="visaType"
@@ -420,7 +422,7 @@ export default function Dashboard() {
                         htmlFor="joining"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Joining Date
+                        Joining Date | 入社日
                       </label>
                       <input
                         id="joining"
@@ -437,7 +439,7 @@ export default function Dashboard() {
                         htmlFor="site"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Current Site Name
+                        Current Site Name | 現在のサイト名
                       </label>
                       <input
                         id="site"
@@ -456,7 +458,7 @@ export default function Dashboard() {
                         htmlFor="leavingDate"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Leaving Date
+                        Leaving Date | 退職日
                       </label>
                       <input
                         id="leavingDate"
@@ -473,7 +475,7 @@ export default function Dashboard() {
                         htmlFor="leavingReason"
                         className="block text-xs font-medium text-gray-700 mb-1"
                       >
-                        Leaving Reason
+                        Leaving Reason | 退職理由
                       </label>
                       <textarea
                         id="leavingReason"
@@ -490,7 +492,7 @@ export default function Dashboard() {
                       htmlFor="employeePhoto"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Employee Photo
+                      Employee Photo | 従業員の写真
                     </label>
                     <input
                       id="employeePhoto"
@@ -507,7 +509,7 @@ export default function Dashboard() {
                       htmlFor="zairoPhoto"
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
-                      Zairo Card Photo
+                      Zairo Card Photo | ザイロカードの写真
                     </label>
                     <input
                       id="zairoPhoto"
@@ -541,10 +543,10 @@ export default function Dashboard() {
             <>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-black">
-                  Full Database
+                  Full Database | フルデータベース
                 </h2>
                 <p className="text-sm text-gray-600 mt-2">
-                  Total Entries: {mounted ? data.length : "—"}
+                  Total Entries | 総エントリー数: {mounted ? data.length : "—"}
                 </p>
               </div>
 
@@ -553,28 +555,28 @@ export default function Dashboard() {
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-700 to-pink-600 text-white">
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Zairo Card No.
+                        Zairo Card No. | ザイロカード番号
                       </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Full Name
+                        Full Name | 氏名
                       </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Nationality
+                        Nationality | 国籍
                       </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Visa Type
+                        Visa Type | ビザの種類
+                      </th>
+                      <th className="px-7 py-4 text-sm font-semibold text-left">
+                        Joining Date | 入社日
+                      </th>
+                      <th className="px-7 py-4 text-sm font-semibold text-left">
+                        Leaving Date | 退職日
                       </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Joining Date
+                        Current Site | 現在のサイト
                       </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Leaving Date
-                      </th>
-                      <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Current Site
-                      </th>
-                      <th className="px-6 py-4 text-sm font-semibold text-left">
-                        Action
+                        Action | アクション
                       </th>
                     </tr>
                   </thead>
@@ -585,7 +587,7 @@ export default function Dashboard() {
                           <div>
                             <DatabaseLargeIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                             <p className="text-gray-600">
-                              No entries in database
+                              No entries in database | データベースにエントリがありません
                             </p>
                           </div>
                         </td>
@@ -615,7 +617,7 @@ export default function Dashboard() {
                             {entry.leaving_date}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
-                            {entry.current_site}
+                            {entry.current_site_name}
                           </td>
                            <td className="px-6 py-4 text-sm text-gray-700">
                            -
