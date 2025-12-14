@@ -19,9 +19,13 @@ export default function Login() {
   return (
     <div className={styles.loginContainer}>
       <div className={styles.card}>
-        <header className={styles.header}> 
-          <h1 className={styles.title}>Pioneer Service Kyoto</h1>
-          <p className={styles.subtitle}>ブラックリスト管理システム</p>
+        <header className={styles.header}>
+            <img src="/logo/2.jpg" alt="Pioneer Logo" style={{width: '30%', display: 'block', margin: '0 auto'}} className={styles.logo} />
+          {/* <div style={{display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}> */}
+            <img src="/logo/1.jpg" alt="Pioneer Logo" style={{width: '100%', marginTop: '10px'}} className={styles.logo} />
+          {/* </div> */}
+          {/* <h1 className={styles.title}>Pioneer Service Kyoto</h1>
+          <p className={styles.subtitle}>ブラックリスト管理システム</p> */}
         </header>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>
