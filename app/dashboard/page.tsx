@@ -48,16 +48,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Gradient Header */}
-      <header className="bg-gradient-to-r from-purple-400 to-pink-600 text-white">
+      {/* Top Gradient Headerr */}
+      <header className="bg-gradient-to-r from-purple-300 to-pink-600 text-white">
         <div className="max-w-7xl mx-auto px-8 py-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold leading-tight">
+            {/* <h1 className="text-2xl font-semibold leading-tight">
               Pioneer Service Kyoto
             </h1>
             <p className="text-sm opacity-90 -mt-1">
               Blacklist Management System
-            </p>
+            </p> */}
+            <img src="/logo/1.jpg" alt="Pioneer Logo" className="h-10 w-auto" />
           </div>
           <div className="pt-1">
             <button
