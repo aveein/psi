@@ -128,7 +128,7 @@ export default function Dashboard() {
       <main className="flex-1 bg-gray-50 py-10 md:py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-8">
           {active === "search" && (
-           <Search searchBy={searchBy} setSearchBy={setSearchBy} />
+           <Search searchBy={searchBy} setSearchBy={setSearchBy}  fetchData={fetchData} />
           )}
 
           {active === "add" && (

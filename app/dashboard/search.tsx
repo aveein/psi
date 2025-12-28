@@ -5,9 +5,10 @@ import MemberTable from "./memberTable";
 type SearchProps = {
   searchBy: string;
   setSearchBy: (value: string) => void;
+  fetchData: () => void;
 };
 
-const Search = ({ searchBy, setSearchBy }: SearchProps) => {
+const Search = ({ searchBy, setSearchBy , fetchData }: SearchProps) => {
   const [data, setData] = useState<any[]>([]);
   const [value, setValue] = useState<string>("");
 
@@ -81,7 +82,7 @@ const Search = ({ searchBy, setSearchBy }: SearchProps) => {
       </div>
 
       {data.length > 0 ? (
-        <MemberTable data={data} />
+        <MemberTable data={data} fetchData={fetchData} />
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[220px]">
           <SearchLargeIcon className="w-20 h-20 text-gray-400 mb-6" />
