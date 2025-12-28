@@ -4,9 +4,10 @@ import MemberTable from "./memberTable";
 type MemberListProps = {
   mounted: boolean;
   data: any[];
+  fetchData: () => void;
 };
 
-const MemberList = ({mounted, data}: MemberListProps) => {
+const MemberList = ({mounted, data , fetchData}: MemberListProps) => {
     return (
          <>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -18,7 +19,7 @@ const MemberList = ({mounted, data}: MemberListProps) => {
                 </p>
               </div>
 
-              <MemberTable data={data} />
+              <MemberTable data={data} fetchData={fetchData} />
             </>
     )
 };

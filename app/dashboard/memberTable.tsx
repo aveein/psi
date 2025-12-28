@@ -1,11 +1,29 @@
 import { DatabaseLargeIcon } from "./helper";
 
-const MemberTable = ({data} : {data: any[]}) => {
+const MemberTable = ({data, fetchData } : {data: any[], fetchData: () => void}) => {
+    const handleDelete = (id: number) => async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blacklist/${id}`, {
+            method: 'DELETE',
+          });
+          if (response.ok) {
+            console.log(`Member with ID ${id} deleted successfully.`);
+            fetchData();
+          }
+        } catch (error) {
+          console.error("Failed to delete member:", error);
+        }
+      };
+  
+
     return (
        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="min-w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-700 to-pink-600 text-white">
+                       <th className="px-6 py-4 text-sm font-semibold text-left">
+                        Employee Photo | 社員写真
+                      </th>
                       <th className="px-6 py-4 text-sm font-semibold text-left">
                         Zairo Card No. | ザイロカード番号
                       </th>
@@ -50,6 +68,14 @@ const MemberTable = ({data} : {data: any[]}) => {
                           key={entry.id}
                           className="border-t border-gray-100 hover:bg-gray-50"
                         >
+                           <td className="px-6 py-4 text-sm text-gray-700">
+                            { entry.employee_photo && (
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${entry.employee_photo}`}
+                              alt="Employee Photo"
+                              className="w-12 h-12 rounded-full object-cover"
+                            />)}
+                          </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
                             {entry.card_no}
                           </td>
@@ -72,7 +98,9 @@ const MemberTable = ({data} : {data: any[]}) => {
                             {entry.current_site_name}
                           </td>
                            <td className="px-6 py-4 text-sm text-gray-700">
-                           -
+                            <button onClick={handleDelete(entry.id)} className="text-red-600 hover:underline">
+                              Delete | 削除
+                            </button>
                           </td>
                         </tr>
                       ))

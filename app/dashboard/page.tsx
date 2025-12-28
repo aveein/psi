@@ -136,7 +136,7 @@ export default function Dashboard() {
           )}
 
           {active === "full" && (
-           <MemberList  mounted={mounted} data={data} />
+           <MemberList  mounted={mounted} data={data} fetchData={fetchData} />
           )}
         </div>
       </main>
