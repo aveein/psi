@@ -7,13 +7,30 @@ import { redirect } from 'next/navigation';
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+      const payload = {
+        username: username,
+        password: password,
+      };
+      setLoading(true);
+     const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+      
+        }
+      );
+      setLoading(false);
+      console.log("Login response:", res);
+       router.push("/dashboard");
   
-    // redirect('/dashboard');
-    router.push("/dashboard");
-    // Placeholder: integrate authentication logic here
   }
 
   return (
@@ -56,7 +73,9 @@ export default function Login() {
               
             />
           </div>
-          <button type="submit" className={styles.button}>Login | ログイン</button>
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Logging in... | ログイン中" : "Login | ログイン"}
+          </button>
         </form>
         <p className={styles.demoNote}>Demo credentials | デモ資格情報 : admin / pioneer2025</p>
       </div>
