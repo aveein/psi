@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC_PATHS = ["/", "/login", "/_next", "/favicon.ico", "/logo"];
-const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "http://localhost:3001";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
